@@ -32,6 +32,8 @@ style.textContent = `
   .manifesto-signal {
     --flight-y: 0px;
     --flight-tilt: 0deg;
+    --game-origin-y: 0px;
+    --game-scale: 1;
     z-index: 5;
     color: inherit;
     cursor: pointer;
@@ -39,7 +41,9 @@ style.textContent = `
     border: 0;
     padding: 0;
     touch-action: manipulation;
-    transform: translate3d(0, var(--flight-y), 0) rotate(var(--flight-tilt));
+    transform-origin: center;
+    transform: translate3d(0, calc(var(--game-origin-y) + var(--flight-y)), 0)
+      rotate(var(--flight-tilt)) scale(var(--game-scale));
   }
 
   .manifesto-signal:focus-visible {
@@ -85,6 +89,8 @@ style.textContent = `
   }
 
   .manifesto-signal.is-flight {
+    --game-origin-y: -72px;
+    --game-scale: .78;
     will-change: transform;
   }
 
@@ -202,6 +208,11 @@ style.textContent = `
     .manifesto-signal::after {
       bottom: calc(100% + 11px);
       font-size: 7px;
+    }
+
+    .manifesto-signal.is-flight {
+      --game-origin-y: -64px;
+      --game-scale: .72;
     }
 
     .flappy-score {
@@ -323,21 +334,24 @@ function clearObstacles(state) {
 }
 
 function createObstacle(state) {
-  const sectionHeight = state.section.clientHeight;
-  const signalCenter = state.signal.offsetTop + state.signal.offsetHeight / 2;
-  const gapHeight = Math.max(112, Math.min(146, sectionHeight * 0.24));
-  const centerMin = Math.max(gapHeight / 2 + 18, signalCenter - state.topLimit + 10);
-  const centerMax = Math.min(
-    sectionHeight - gapHeight / 2 - 45,
-    signalCenter + state.bottomLimit - 10,
+  const signalCenter = state.signal.offsetTop + state.signal.offsetHeight / 2 + state.gameLift;
+  const safeTop = Math.max(18, signalCenter - state.topLimit);
+  const safeBottom = Math.min(
+    state.section.clientHeight - 28,
+    signalCenter + state.bottomLimit,
   );
-  const gapCenter = centerMin + Math.random() * Math.max(1, centerMax - centerMin);
-  const gapTop = Math.round(gapCenter - gapHeight / 2);
-  const gapBottom = Math.round(gapCenter + gapHeight / 2);
+  const gapHeight = Math.min(state.gapHeight, safeBottom - safeTop);
+  const gapTop = Math.round(safeTop + Math.random() * Math.max(1, safeBottom - safeTop - gapHeight));
+  const gapBottom = Math.round(gapTop + gapHeight);
+  const obstacleBottom = Math.min(
+    state.section.clientHeight - 24,
+    safeBottom + state.pipeTail,
+  );
   const element = document.createElement("div");
   element.className = "flappy-obstacle";
   element.style.setProperty("--gap-top", `${gapTop}px`);
   element.style.setProperty("--gap-bottom", `${gapBottom}px`);
+  element.style.height = `${Math.round(obstacleBottom)}px`;
   element.innerHTML = '<span class="flappy-top"></span><span class="flappy-bottom"></span>';
   state.field.append(element);
 
@@ -375,7 +389,7 @@ function moveObstacles(state, frameScale, timestamp) {
   const birdTop = signalRect.top - sectionRect.top + 4;
   const birdBottom = signalRect.bottom - sectionRect.top - 4;
 
-  if (timestamp - state.lastSpawn > 1850) {
+  if (timestamp - state.lastSpawn > 2200) {
     createObstacle(state);
     state.lastSpawn = timestamp;
   }
@@ -406,18 +420,18 @@ function moveObstacles(state, frameScale, timestamp) {
 function animateGame(state, timestamp) {
   const frameScale = Math.min(Math.max((timestamp - state.lastTimestamp) / 16.67, 0.15), 2);
   state.lastTimestamp = timestamp;
-  state.velocity += 0.34 * frameScale;
+  state.velocity += 0.48 * frameScale;
   state.y += state.velocity * frameScale;
 
   if (state.active && (state.y < -state.topLimit || state.y > state.bottomLimit)) {
     finishGame(state);
   }
 
-  if (state.active) moveObstacles(state, frameScale, timestamp);
-
-  const tilt = Math.max(-17, Math.min(13, state.velocity * 2.25));
+  const tilt = Math.max(-16, Math.min(14, state.velocity * 2.4));
   state.signal.style.setProperty("--flight-y", `${state.y.toFixed(2)}px`);
   state.signal.style.setProperty("--flight-tilt", `${tilt.toFixed(2)}deg`);
+
+  if (state.active) moveObstacles(state, frameScale, timestamp);
 
   if (state.active || state.y < 0) {
     state.frame = window.requestAnimationFrame((time) => animateGame(state, time));
@@ -431,7 +445,7 @@ function resetGame(state) {
   state.score = 0;
   state.gameOver = false;
   state.active = true;
-  state.lastSpawn = performance.now() - 1900;
+  state.lastSpawn = performance.now() - 2250;
   state.velocity = 0;
   state.y = 0;
   state.signal.style.setProperty("--flight-y", "0.00px");
@@ -444,6 +458,7 @@ function resetGame(state) {
 
 function createGame(signal) {
   const section = signal.closest(".manifesto");
+  const isMobile = window.matchMedia("(max-width: 580px)").matches;
   const field = document.createElement("div");
   const scoreElement = document.createElement("div");
   field.className = "flappy-field";
@@ -455,18 +470,21 @@ function createGame(signal) {
 
   const state = {
     active: false,
-    bottomLimit: window.matchMedia("(max-width: 580px)").matches ? 62 : 78,
+    bottomLimit: isMobile ? 50 : 58,
     field,
     frame: 0,
+    gapHeight: isMobile ? 128 : 144,
+    gameLift: isMobile ? -64 : -72,
     gameOver: false,
     lastSpawn: 0,
     lastTimestamp: performance.now(),
     obstacles: [],
+    pipeTail: isMobile ? 34 : 40,
     score: 0,
     scoreElement,
     section,
     signal,
-    topLimit: window.matchMedia("(max-width: 580px)").matches ? 138 : 178,
+    topLimit: isMobile ? 96 : 110,
     velocity: 0,
     y: 0,
   };
@@ -480,7 +498,7 @@ function flap(signal) {
   if (!state.active) resetGame(state);
 
   signal.classList.add("is-flight");
-  state.velocity = -9.1;
+  state.velocity = -6.8;
   state.lastTimestamp = performance.now();
   if (!state.frame) {
     state.frame = window.requestAnimationFrame((time) => animateGame(state, time));
