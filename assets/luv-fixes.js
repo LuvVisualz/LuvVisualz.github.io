@@ -48,6 +48,30 @@ style.textContent = `
     border-radius: 2px;
   }
 
+  .manifesto-signal::after {
+    content: attr(data-game-hint);
+    position: absolute;
+    bottom: calc(100% + 13px);
+    left: 50%;
+    width: max-content;
+    transform: translateX(-50%);
+    color: var(--acid);
+    font: 8px/1.2 monospace;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: .88;
+    pointer-events: none;
+    animation: game-hint 1.45s ease-in-out infinite alternate;
+    transition: opacity .2s ease, transform .2s ease;
+  }
+
+  .manifesto-signal.is-flight::after {
+    opacity: 0;
+    transform: translate(-50%, -5px);
+    animation: none;
+  }
+
   .manifesto-signal i {
     animation: 1.2s ease-in-out infinite alternate signal !important;
   }
@@ -72,6 +96,11 @@ style.textContent = `
 
   .manifesto-signal.is-crashed {
     filter: drop-shadow(0 0 13px #c9ff53aa);
+  }
+
+  @keyframes game-hint {
+    from { opacity: .52; transform: translate(-50%, 2px); }
+    to { opacity: 1; transform: translate(-50%, -2px); }
   }
 
   .flappy-field {
@@ -168,6 +197,11 @@ style.textContent = `
 
     .manifesto > h2 {
       margin-top: 31px !important;
+    }
+
+    .manifesto-signal::after {
+      bottom: calc(100% + 11px);
+      font-size: 7px;
     }
 
     .flappy-score {
@@ -293,7 +327,10 @@ function createObstacle(state) {
   const signalCenter = state.signal.offsetTop + state.signal.offsetHeight / 2;
   const gapHeight = Math.max(112, Math.min(146, sectionHeight * 0.24));
   const centerMin = Math.max(gapHeight / 2 + 18, signalCenter - state.topLimit + 10);
-  const centerMax = Math.min(sectionHeight - gapHeight / 2 - 45, signalCenter + 14);
+  const centerMax = Math.min(
+    sectionHeight - gapHeight / 2 - 45,
+    signalCenter + state.bottomLimit - 10,
+  );
   const gapCenter = centerMin + Math.random() * Math.max(1, centerMax - centerMin);
   const gapTop = Math.round(gapCenter - gapHeight / 2);
   const gapBottom = Math.round(gapCenter + gapHeight / 2);
@@ -310,7 +347,7 @@ function createObstacle(state) {
     gapBottom,
     passed: false,
     width: element.offsetWidth,
-    x: -element.offsetWidth - 8,
+    x: state.section.clientWidth + 8,
   });
 }
 
@@ -318,7 +355,11 @@ function finishGame(state) {
   if (!state.active) return;
   state.active = false;
   state.gameOver = true;
+  state.velocity = 0;
+  state.y = 0;
   state.signal.classList.add("is-crashed");
+  state.signal.style.setProperty("--flight-y", "0.00px");
+  state.signal.style.setProperty("--flight-tilt", "0.00deg");
   state.section.classList.remove("is-game-active");
   state.section.classList.add("is-game-over");
   updateScore(state, true);
@@ -340,7 +381,7 @@ function moveObstacles(state, frameScale, timestamp) {
   }
 
   state.obstacles.forEach((obstacle) => {
-    obstacle.x += (speed / 60) * frameScale;
+    obstacle.x -= (speed / 60) * frameScale;
     obstacle.element.style.transform = `translate3d(${obstacle.x.toFixed(2)}px, 0, 0)`;
 
     const overlapsX = birdRight > obstacle.x && birdLeft < obstacle.x + obstacle.width;
@@ -348,7 +389,7 @@ function moveObstacles(state, frameScale, timestamp) {
       finishGame(state);
     }
 
-    if (!obstacle.passed && obstacle.x > birdRight) {
+    if (!obstacle.passed && obstacle.x + obstacle.width < birdLeft) {
       obstacle.passed = true;
       state.score += 1;
       updateScore(state);
@@ -356,7 +397,7 @@ function moveObstacles(state, frameScale, timestamp) {
   });
 
   state.obstacles = state.obstacles.filter((obstacle) => {
-    if (obstacle.x <= sectionWidth + 70) return true;
+    if (obstacle.x >= -obstacle.width - 70) return true;
     obstacle.element.remove();
     return false;
   });
@@ -368,14 +409,8 @@ function animateGame(state, timestamp) {
   state.velocity += 0.34 * frameScale;
   state.y += state.velocity * frameScale;
 
-  if (state.y < -state.topLimit) {
-    state.y = -state.topLimit;
-    state.velocity = 0.9;
-  }
-
-  if (state.y >= 0) {
-    state.y = 0;
-    state.velocity = 0;
+  if (state.active && (state.y < -state.topLimit || state.y > state.bottomLimit)) {
+    finishGame(state);
   }
 
   if (state.active) moveObstacles(state, frameScale, timestamp);
@@ -396,7 +431,11 @@ function resetGame(state) {
   state.score = 0;
   state.gameOver = false;
   state.active = true;
-  state.lastSpawn = performance.now() - 500;
+  state.lastSpawn = performance.now() - 1900;
+  state.velocity = 0;
+  state.y = 0;
+  state.signal.style.setProperty("--flight-y", "0.00px");
+  state.signal.style.setProperty("--flight-tilt", "0.00deg");
   state.section.classList.remove("is-game-over");
   state.section.classList.add("is-game-active");
   state.signal.classList.remove("is-crashed");
@@ -416,6 +455,7 @@ function createGame(signal) {
 
   const state = {
     active: false,
+    bottomLimit: window.matchMedia("(max-width: 580px)").matches ? 62 : 78,
     field,
     frame: 0,
     gameOver: false,
@@ -463,6 +503,9 @@ function enhanceSignal() {
       ? "Play precision game and cinematic sound"
       : "Jugar precisión y reproducir sonido cinematográfico",
   );
+  signal.dataset.gameHint = document.documentElement.lang === "en"
+    ? "Tap to play ↓"
+    : "Tocá para jugar ↓";
   createGame(signal);
   signal.addEventListener("pointerdown", () => flap(signal));
   signal.addEventListener("click", (event) => {
