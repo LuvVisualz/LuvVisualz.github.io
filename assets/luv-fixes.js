@@ -13,6 +13,7 @@ style.textContent = `
 
   .manifesto {
     isolation: isolate;
+    min-height: 600px !important;
   }
 
   .manifesto > p,
@@ -22,11 +23,12 @@ style.textContent = `
   }
 
   .manifesto > p {
-    transform: translateY(10px);
+    transform: translateY(28px);
   }
 
   .manifesto > h2 {
     margin-top: 34px !important;
+    transform: translateY(18px);
   }
 
   .manifesto-signal {
@@ -89,7 +91,7 @@ style.textContent = `
   }
 
   .manifesto-signal.is-flight {
-    --game-origin-y: -72px;
+    --game-origin-y: -88px;
     --game-scale: .78;
     will-change: transform;
   }
@@ -198,11 +200,12 @@ style.textContent = `
     }
 
     .manifesto > p {
-      transform: translateY(9px);
+      transform: translateY(26px);
     }
 
     .manifesto > h2 {
       margin-top: 31px !important;
+      transform: translateY(16px);
     }
 
     .manifesto-signal::after {
@@ -211,7 +214,7 @@ style.textContent = `
     }
 
     .manifesto-signal.is-flight {
-      --game-origin-y: -64px;
+      --game-origin-y: -80px;
       --game-scale: .72;
     }
 
@@ -420,7 +423,7 @@ function moveObstacles(state, frameScale, timestamp) {
 function animateGame(state, timestamp) {
   const frameScale = Math.min(Math.max((timestamp - state.lastTimestamp) / 16.67, 0.15), 2);
   state.lastTimestamp = timestamp;
-  state.velocity += 0.48 * frameScale;
+  state.velocity += 0.46 * frameScale;
   state.y += state.velocity * frameScale;
 
   if (state.active && (state.y < -state.topLimit || state.y > state.bottomLimit)) {
@@ -470,21 +473,21 @@ function createGame(signal) {
 
   const state = {
     active: false,
-    bottomLimit: isMobile ? 50 : 58,
+    bottomLimit: isMobile ? 50 : 68,
     field,
     frame: 0,
-    gapHeight: isMobile ? 128 : 144,
-    gameLift: isMobile ? -64 : -72,
+    gapHeight: isMobile ? 128 : 136,
+    gameLift: isMobile ? -80 : -88,
     gameOver: false,
     lastSpawn: 0,
     lastTimestamp: performance.now(),
     obstacles: [],
-    pipeTail: isMobile ? 34 : 40,
+    pipeTail: 34,
     score: 0,
     scoreElement,
     section,
     signal,
-    topLimit: isMobile ? 96 : 110,
+    topLimit: isMobile ? 130 : 148,
     velocity: 0,
     y: 0,
   };
@@ -498,7 +501,7 @@ function flap(signal) {
   if (!state.active) resetGame(state);
 
   signal.classList.add("is-flight");
-  state.velocity = -6.8;
+  state.velocity = -7.6;
   state.lastTimestamp = performance.now();
   if (!state.frame) {
     state.frame = window.requestAnimationFrame((time) => animateGame(state, time));
