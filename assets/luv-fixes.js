@@ -12,11 +12,15 @@ style.textContent = `
   }
 
   .manifesto-signal {
+    --flight-y: 0px;
+    --flight-tilt: 0deg;
     color: inherit;
     cursor: pointer;
     background: transparent;
     border: 0;
     padding: 0;
+    touch-action: manipulation;
+    transform: translate3d(0, var(--flight-y), 0) rotate(var(--flight-tilt));
   }
 
   .manifesto-signal:focus-visible {
@@ -37,6 +41,16 @@ style.textContent = `
     filter: drop-shadow(0 0 10px #aa62ffb3);
   }
 
+  .manifesto-signal.is-flight {
+    will-change: transform;
+  }
+
+  .manifesto-signal.is-flight i {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: scaleY(1) !important;
+  }
+
   @media (max-width: 580px) {
     .project-card.project-artistico .project-cover {
       background-color: #030204;
@@ -50,6 +64,7 @@ document.head.append(style);
 
 let audioContext;
 let sfxIndex = 0;
+const flightStates = new WeakMap();
 
 const sfxPresets = [
   [
@@ -111,12 +126,19 @@ function playTone(context, startAt, frequency, delay, duration, type, volume, en
   oscillator.stop(toneStart + duration + 0.02);
 }
 
-function playSfx(signal) {
+async function playSfx(signal) {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) return;
 
   audioContext ??= new AudioContextClass();
-  if (audioContext.state === "suspended") audioContext.resume();
+  if (audioContext.state === "suspended") {
+    try {
+      await audioContext.resume();
+    } catch {
+      return;
+    }
+  }
+  if (audioContext.state !== "running") return;
 
   const startAt = audioContext.currentTime + 0.01;
   const preset = sfxPresets[sfxIndex % sfxPresets.length];
@@ -125,6 +147,47 @@ function playSfx(signal) {
   preset.forEach((tone) => playTone(audioContext, startAt, ...tone));
   signal.classList.add("is-sfx-playing");
   window.setTimeout(() => signal.classList.remove("is-sfx-playing"), 360);
+}
+
+function animateFlight(signal, state, timestamp) {
+  const frameScale = Math.min((timestamp - state.lastTimestamp) / 16.67, 2);
+  state.lastTimestamp = timestamp;
+  state.velocity += 0.32 * frameScale;
+  state.y += state.velocity * frameScale;
+
+  if (state.y < -88) {
+    state.y = -88;
+    state.velocity = 0.7;
+  }
+
+  if (state.y >= 0) {
+    state.y = 0;
+    state.velocity = 0;
+    state.frame = 0;
+  } else {
+    state.frame = window.requestAnimationFrame((time) => animateFlight(signal, state, time));
+  }
+
+  const tilt = Math.max(-14, Math.min(12, state.velocity * 2.2));
+  signal.style.setProperty("--flight-y", `${state.y.toFixed(2)}px`);
+  signal.style.setProperty("--flight-tilt", `${tilt.toFixed(2)}deg`);
+}
+
+function flap(signal) {
+  let state = flightStates.get(signal);
+  if (!state) {
+    state = { frame: 0, lastTimestamp: performance.now(), velocity: 0, y: 0 };
+    flightStates.set(signal, state);
+  }
+
+  signal.classList.add("is-flight");
+  state.velocity = -5.8;
+  state.lastTimestamp = performance.now();
+  if (!state.frame) {
+    state.frame = window.requestAnimationFrame((time) => animateFlight(signal, state, time));
+  }
+
+  void playSfx(signal);
 }
 
 function enhanceSignal() {
@@ -137,13 +200,18 @@ function enhanceSignal() {
   signal.setAttribute("tabindex", "0");
   signal.setAttribute(
     "aria-label",
-    document.documentElement.lang === "en" ? "Play sound effect" : "Reproducir efecto de sonido",
+    document.documentElement.lang === "en"
+      ? "Lift the signal and play a sound effect"
+      : "Elevar la señal y reproducir un efecto de sonido",
   );
-  signal.addEventListener("click", () => playSfx(signal));
+  signal.addEventListener("pointerdown", () => flap(signal));
+  signal.addEventListener("click", (event) => {
+    if (event.detail === 0) flap(signal);
+  });
   signal.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    playSfx(signal);
+    flap(signal);
   });
 }
 
