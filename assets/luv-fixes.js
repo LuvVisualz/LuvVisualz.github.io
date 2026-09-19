@@ -25,6 +25,7 @@ style.textContent = `
   .manifesto > h2 {
     z-index: 3;
     pointer-events: none;
+    transition: transform .32s ease;
   }
 
   .manifesto > p {
@@ -34,6 +35,16 @@ style.textContent = `
   .manifesto > h2 {
     margin-top: 34px !important;
     transform: translateY(18px);
+  }
+
+  .manifesto.is-game-active > p,
+  .manifesto.is-game-over > p {
+    transform: translateY(48px);
+  }
+
+  .manifesto.is-game-active > h2,
+  .manifesto.is-game-over > h2 {
+    transform: translateY(38px);
   }
 
   .manifesto-signal {
@@ -211,6 +222,16 @@ style.textContent = `
     .manifesto > h2 {
       margin-top: 31px !important;
       transform: translateY(16px);
+    }
+
+    .manifesto.is-game-active > p,
+    .manifesto.is-game-over > p {
+      transform: translateY(48px);
+    }
+
+    .manifesto.is-game-active > h2,
+    .manifesto.is-game-over > h2 {
+      transform: translateY(38px);
     }
 
     .manifesto-signal::after {
@@ -479,7 +500,7 @@ function createGame(signal) {
 
   const state = {
     active: false,
-    bottomLimit: isMobile ? 50 : 68,
+    bottomLimit: isMobile ? 72 : 90,
     field,
     frame: 0,
     gapHeight: isMobile ? 128 : 136,
@@ -488,7 +509,7 @@ function createGame(signal) {
     lastSpawn: 0,
     lastTimestamp: performance.now(),
     obstacles: [],
-    pipeTail: 34,
+    pipeTail: 54,
     score: 0,
     scoreElement,
     section,
