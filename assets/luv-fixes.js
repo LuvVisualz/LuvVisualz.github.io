@@ -16,6 +16,11 @@ style.textContent = `
     min-height: 600px !important;
   }
 
+  .manifesto.is-game-ready {
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
   .manifesto > p,
   .manifesto > h2 {
     z-index: 3;
@@ -468,6 +473,7 @@ function createGame(signal) {
   field.setAttribute("aria-hidden", "true");
   scoreElement.className = "flappy-score";
   scoreElement.setAttribute("aria-live", "polite");
+  section.classList.add("is-game-ready");
   section.prepend(field);
   section.append(scoreElement);
 
@@ -527,11 +533,8 @@ function enhanceSignal() {
   signal.dataset.gameHint = document.documentElement.lang === "en"
     ? "Tap to play ↓"
     : "Tocá para jugar ↓";
-  createGame(signal);
-  signal.addEventListener("pointerdown", () => flap(signal));
-  signal.addEventListener("click", (event) => {
-    if (event.detail === 0) flap(signal);
-  });
+  const state = createGame(signal);
+  state.section.addEventListener("click", () => flap(signal));
   signal.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
