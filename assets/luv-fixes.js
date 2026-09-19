@@ -500,7 +500,7 @@ function createGame(signal) {
 
   const state = {
     active: false,
-    bottomLimit: isMobile ? 155 : 160,
+    bottomLimit: isMobile ? 220 : 235,
     field,
     frame: 0,
     gapHeight: isMobile ? 128 : 136,
