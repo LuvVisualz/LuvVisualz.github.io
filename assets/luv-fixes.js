@@ -364,16 +364,21 @@ function clearObstacles(state) {
 
 function createObstacle(state) {
   const signalCenter = state.signal.offsetTop + state.signal.offsetHeight / 2 + state.gameLift;
+  const copy = state.section.querySelector(":scope > p");
+  const tubeFloor = Math.min(
+    state.section.clientHeight - 24,
+    copy ? copy.offsetTop + 38 : state.section.clientHeight - 24,
+  );
   const safeTop = Math.max(18, signalCenter - state.topLimit);
   const safeBottom = Math.min(
-    state.section.clientHeight - 28,
+    tubeFloor - state.pipeTail,
     signalCenter + state.bottomLimit,
   );
   const gapHeight = Math.min(state.gapHeight, safeBottom - safeTop);
   const gapTop = Math.round(safeTop + Math.random() * Math.max(1, safeBottom - safeTop - gapHeight));
   const gapBottom = Math.round(gapTop + gapHeight);
   const obstacleBottom = Math.min(
-    state.section.clientHeight - 24,
+    tubeFloor,
     safeBottom + state.pipeTail,
   );
   const element = document.createElement("div");
