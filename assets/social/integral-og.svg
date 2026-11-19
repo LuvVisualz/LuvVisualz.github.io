@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#0b0713"/><stop offset="1" stop-color="#23113e"/></linearGradient><radialGradient id="v"><stop stop-color="#9f54ff" stop-opacity=".38"/><stop offset="1" stop-color="#9f54ff" stop-opacity="0"/></radialGradient></defs>
+<rect width="1200" height="630" fill="url(#g)"/><circle cx="1090" cy="55" r="440" fill="url(#v)"/><path d="M60 90H1140M60 540H1140" stroke="#a568ee" stroke-opacity=".48"/><path d="M60 90V540M1140 90V540" stroke="#a568ee" stroke-opacity=".25"/>
+<circle cx="95" cy="127" r="9" fill="#c9ff53"/><text x="120" y="138" fill="#f6f0ff" font-family="DejaVu Sans,Arial,sans-serif" font-weight="800" letter-spacing="4" font-size="33">LUV VISUALZ</text>
+<text x="83" y="260" fill="#f6f0ff" font-family="DejaVu Sans,Arial,sans-serif" font-weight="900" letter-spacing="-4" font-size="84">LO QUE OFRECÉS</text>
+<text x="83" y="354" fill="#f6f0ff" font-family="DejaVu Sans,Arial,sans-serif" font-weight="900" letter-spacing="-4" font-size="84">ES BUENO.</text>
+<text x="83" y="449" fill="#c9ff53" font-family="DejaVu Sans,Arial,sans-serif" font-weight="900" letter-spacing="-4" font-size="73">MOSTRÉMOSLO BIEN.</text>
+<text x="84" y="514" fill="#c9bed6" font-family="DejaVu Sans,Arial,sans-serif" font-size="23" letter-spacing="1">PRODUCCIÓN AUDIOVISUAL  ·  VIDEO  ·  FOTOGRAFÍA  ·  ARGENTINA</text>
+</svg>
