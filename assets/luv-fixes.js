@@ -586,8 +586,8 @@ function start() {
   new MutationObserver(applyFixes).observe(document.body, { childList: true, subtree: true });
 }
 
-if (document.readyState === "complete") {
-  window.setTimeout(start, 0);
+if (window.__LUV_HYDRATED__) {
+  start();
 } else {
-  window.addEventListener("load", start, { once: true });
+  window.addEventListener("luv:hydrated", start, { once: true });
 }

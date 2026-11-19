@@ -1,0 +1,65 @@
+/* Integral 2.0: focused additions to the original visual system. */
+.site-header {
+  position: fixed;
+  transition: transform .28s ease, background-color .28s ease, border-color .28s ease;
+}
+.site-header.header-scrolled { background: #0b0812ee; backdrop-filter: blur(18px); }
+.site-header.header-away { transform: translateY(-105%); }
+.project-card:focus-visible, .filters button:focus-visible, .media-tabs button:focus-visible,
+.project-modal button:focus-visible, .site-header a:focus-visible, .site-header button:focus-visible,
+.hero a:focus-visible, .contact a:focus-visible { outline: 2px solid var(--acid); outline-offset: 4px; }
+.project-card:last-child:nth-child(odd) { grid-column: auto; justify-self: stretch; width: 100%; }
+.services-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0,1fr));
+  border: 1px solid var(--line); margin: 0 0 54px;
+}
+.service-item { min-width: 0; padding: clamp(22px, 2.8vw, 38px); border-right: 1px solid var(--line); }
+.service-item:last-child { border-right: 0; }
+.service-item > span { color: var(--violet); font: 10px/1 monospace; letter-spacing: .12em; }
+.service-item h3 { color: var(--ink); font-size: clamp(19px,2vw,26px); letter-spacing: -.035em; margin: 40px 0 14px; }
+.service-item p { color: #b5aebe; font-size: 13px; line-height: 1.65; max-width: 32ch; margin: 0; }
+.project-modal .modal-media-list figure { min-width: 0; }
+.project-modal .video-frame { max-width: 100%; }
+._controlRow_17xky_112 { gap: 6px; }
+._controlRow_17xky_112 button { min-width: 28px; }
+.player-volume { display: flex; align-items: center; gap: 4px; flex: none; }
+.player-volume input { width: clamp(40px,5vw,70px); accent-color: var(--acid); cursor: pointer; }
+.player-speed { font: 10px/1 monospace; white-space: nowrap; }
+.player-quality { color: #fff; background: #08070add; border: 1px solid #ffffff59; border-radius: 4px;
+  max-width: 86px; padding: 5px 3px; font: 10px/1 monospace; cursor: pointer; }
+.player-loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2;
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+  color: #fff; background: #100b18bb; font-size: 13px; animation: integral-pulse 1s ease-in-out infinite alternate; pointer-events: none; }
+.player-error { position: absolute; top: 14px; left: 12px; right: 12px; z-index: 2; color: #fff;
+  background: #210e20e8; border: 1px solid #ef9cc0; border-radius: 4px; padding: 8px 10px; font: 11px/1.4 sans-serif; }
+@keyframes integral-pulse { to { opacity: .4; } }
+@media (max-width: 900px) { .services-grid { grid-template-columns: 1fr; } .service-item { border-right: 0; border-bottom: 1px solid var(--line); }
+  .service-item:last-child { border-bottom: 0; } .service-item h3 { margin-top: 20px; } }
+@media (max-width: 580px) { .site-header { height: 78px; } ._controlRow_17xky_112 { gap: 2px; }
+  .player-volume input { width: 44px; } .player-quality { max-width: 64px; font-size: 9px; }
+  .player-speed { font-size: 9px; } }
+@container (max-width: 300px) { .player-volume input { width: 34px; } .player-quality { max-width: 60px; } }
+@container (max-width: 245px) { .player-volume input { display: none; } }
+@media (prefers-reduced-motion: reduce) { .site-header { transition: none; } .player-loading { animation: none; } }
+body { overflow-x: clip; }
+@media (max-width: 580px) {
+  .project-visual strong { font-size: clamp(27px, 8.5vw, 40px); line-height: .88; max-width: 100%; margin-bottom: 31px; }
+  .view-project { bottom: 15px; right: 18px; font-size: 8px; }
+  .project-kind { right: 16px; font-size: 8px; }
+  .project-meta { gap: 10px; }
+  .project-meta span { max-width: 55%; }
+  .project-meta h3 { max-width: 45%; text-align: right; }
+}
+@media (max-width: 350px) {
+  .site-header { padding-inline: 14px; }
+  .header-side { gap: 7px; }
+  .brand-logo { width: 38px; height: 38px; }
+  .language-switch { padding: 7px; }
+  .project-visual { padding: 18px; }
+  .project-visual strong { font-size: 27px; }
+}
+.ticker { transform: none; }
+@media (max-width: 390px) {
+  .hero h1 em { font-size: 11.5vw; letter-spacing: -.08em; }
+}
+#trabajos, #proceso, #contacto { scroll-margin-top: 94px; }
